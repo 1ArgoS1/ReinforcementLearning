@@ -10,7 +10,7 @@ from agents import UCB1
 #------------------------------------------
 
 
-def train(arms=10, iterations=1000, tests=200):
+def train(arms=10, iterations=1000, tests=2000):
     # create bandit and agent.
     bandit = Bandits(arms)
     agent = UCB1(2,[i for i in range(arms)])
