@@ -40,12 +40,12 @@ class Bandits():
             # count number of times optimal action taken.
             if action == self.optim_arm:
                 optimal_action_count += 1
-            data[0].append(optimal_action_count/(i+1))
+            data[0].append(action_count)
 
         for i, reward in enumerate(self.data[1]):
             # calculate reward per step.
             reward_count += reward
-            data[1].append(reward_count/(i+1))
+            data[1].append(reward_count)
 
         return data
 
