@@ -1,7 +1,7 @@
 import random
 import math
 import scipy.stats as stats
-
+import statistics
 
 class Agent():
     ''' Implements different RL algorithms for learning about environment.
@@ -33,7 +33,7 @@ class Agent():
     def action(self):
         raise NotImplementedError("action not initialised !")
 
-    def update(self, x={}):
+    def update(self, x):
         # update all the estimates with reward obtained.
         for action in x.keys():
             # new_estimate = old_estimate + step_size*(reward - old_estimate)
@@ -84,57 +84,82 @@ class Softmax(Agent):
 
     '''
 
-    def __init__(self, temperature=2.15, *args):
+    def __init__(self, temperature=0.5, *args):
         super(Softmax, self).__init__(*args)
         self.T = temperature
 
 
     def action(self):
-        # initialise the initial estimate for calculating probablities.
-        pdf = [math.exp(i/self.T) for i in self.estimate.values()]
-        sum_pdf = [pdf[i]/sum(pdf) for i in range(len(self.estimate))]
-        softmax = stats.rv_discrete(values=(self.actions,sum_pdf))
-        # sampling
-        choice = softmax.rvs()
-        return choice
+        if(all(self.count.values())):
+           # calculation of softmax probablities.
+           pdf = [math.exp(i/self.T) for i in self.estimate.values()]
+           sum_pdf = [pdf[i]/sum(pdf) for i in range(len(self.estimate))]
+           softmax = stats.rv_discrete(values=(self.actions,sum_pdf))
+           # sampling
+           choice = softmax.rvs()
+           return choice
 
+        else:
+           # initialise the estimates.
+           initial_set = [x for i, x in enumerate(self.actions) if self.count[i]==0]
+           choice = random.choice(initial_set)
+           return choice
 
 
 
 class UCB1(Agent):
-    ''' Upper Confidence Bound algorithm. Estimates
-
-
+    ''' Upper Confidence Bound algorithm.
+        Generates the action from estimate computed using Q values
+        and UCB term. takes C as a parameter as a scaling factor for
+        UCB term.
     '''
-    def __init__(self, c=2, *args):
+    def __init__(self, constant=2, *args):
         super(UCB1, self).__init__(*args)
-        self.c = c
-        self.time = 0
+        # multiplicative factor in UCB algorithm.
+        self.c = constant
+
 
     def action(self):
-        # calculate ucb
-        self.time += 1
-        self.ucb = {i: self.estimate[i] +
-                    self.c*math.sqrt((math.log(self.time))/(self.count[i]+1))
-                    for i in self.estimate.keys()}
-        choice = max(self.ucb, key=self.ucb.get)
-        return choice
+        if(all(self.count.values())):
+           # calculate ucb
+           self.ucb = {i:(self.estimate[i] + self.c*math.sqrt((math.log(sum(self.count)))/(self.count[i]))) for i in self.estimate.keys()}
+           choice = max(self.ucb, key=self.ucb.get)
+           index = self.actions.index(choice)
+           return choice
+
+        else:
+           # initialise the estimates.
+           initial_set = [x for i, x in enumerate(self.actions) if self.count[i]==0]
+           choice = random.choice(initial_set)
+           return choice
+
+
+
+
+
 
 class MEA(Agent):
-    '''
-
+    ''' Median Elimination Algorithm. The idea is to throw the worst half of
+        the arms at each iteration. Takes epsilon and delta as parameters.
 
     '''
     def __init__(self, epsilon, delta, *args):
         super(MEA, self).__init__(*args)
         self.epsilon = epsilon
         self.delta = delta
+        self.iteration = 0
+        self.optimal_states = self.actions.copy()
+        self.data = [self.epsilon,self.delta]
+
+
+
+
 
     def action(self):
-        pass
-
-
-
+            # main loop.
+            self.data[0] *= 0.75
+            self.data[1] *= 0.5
+            self.iteration +=1
 
 
 
