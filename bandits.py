@@ -33,13 +33,13 @@ class Bandits():
     def history(self):
         # processing data for plotting.
         reward_count = 0
-        optimal_action_count = 0
+        action_count = 0
         data = [[], []]
 
         for i, action in enumerate(self.data[0]):
             # count number of times optimal action taken.
             if action == self.optim_arm:
-                optimal_action_count += 1
+                action_count += 1
             data[0].append(action_count)
 
         for i, reward in enumerate(self.data[1]):
