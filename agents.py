@@ -147,8 +147,9 @@ class MEA(Agent):
         super(MEA, self).__init__(*args)
         self.epsilon = epsilon
         self.delta = delta
-        self.iteration = 0
         self.optimal_states = self.actions.copy()
+        # number of iterations before next round.
+        self.limit = math.ceil(math.log(3/self.data[1])/(self.data[0]/2)^2)
         self.data = [self.epsilon,self.delta]
 
 
@@ -156,13 +157,11 @@ class MEA(Agent):
 
 
     def action(self):
+
+        if(sum(self.count.values()) <= self.limit):
             # main loop.
             self.data[0] *= 0.75
             self.data[1] *= 0.5
-            self.iteration +=1
-
-
-
 
 
 
